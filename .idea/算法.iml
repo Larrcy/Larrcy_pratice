@@ -8,6 +8,7 @@
       <sourceFolder url="file://$MODULE_DIR$/力扣多线程/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/机考/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/算法基础/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/项目/断点续传/src" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

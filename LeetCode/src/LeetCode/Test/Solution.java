@@ -1,144 +1,141 @@
 package LeetCode.Test;
 
 
-import javax.swing.text.rtf.RTFEditorKit;
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.security.Key;
+import com.sun.org.apache.xml.internal.utils.IntVector;
+import com.sun.org.apache.xpath.internal.operations.Gt;
+import com.sun.org.apache.xpath.internal.operations.Or;
+import org.omg.CORBA.CharHolder;
+
+import javax.security.auth.callback.CallbackHandler;
+import java.io.IOException;
+import java.lang.annotation.Target;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
- * 给你一个整数数组 nums，请你找出并返回能被三整除的元素最大和。
+ * 给你一个 n x n 的二进制矩阵 grid 中，返回矩阵中最短 畅通路径 的长度。如果不存在这样的路径，返回 -1 。
+ * <p>
+ * 二进制矩阵中的 畅通路径 是一条从 左上角 单元格（即，(0, 0)）到 右下角 单元格（即，(n - 1, n - 1)）的路径，该路径同时满足下述要求：
+ * <p>
+ * 路径途经的所有单元格的值都是 0 。
+ * 路径中所有相邻的单元格应当在 8 个方向之一 上连通（即，相邻两单元之间彼此不同且共享一条边或者一个角）。
+ * 畅通路径的长度 是该路径途经的单元格总数。
  */
 public class Solution {
-    //考虑最后一个数 n =nums[n-1]
-    //若n%3==0则n需要选 考虑从nums[0]到nums[n-2]中寻找能被3整除的元素最大和
-    //若n%3==1
-    //若不选n则考虑从nums[0]到nums[n-2]中寻找能被3整除的元素最大和
-    //若选n 则考虑从nums[0]到nums[n-2]中寻找能被3整除余2的元素最大和
-    //若n%3==2
-    //若不选n则考虑从nums[0]到nums[n-2]中寻找能被3整除的元素最大和
-    //若选n 则考虑从nums[0]到nums[n-2]中寻找能被3整除余1的元素最大和
-    public int maxSumDivThree(int[] nums) {
-        int n = nums.length;
 
-        int[][] dp = new int[n+1][3];
-        dp[0][0] = 0;
-        dp[0][1] = Integer.MIN_VALUE;
-        dp[0][2] = Integer.MIN_VALUE;
 
-        for (int i = 1; i <= n; i++) {
-            if (nums[i-1] % 3 == 0) {
-                dp[i][0] = Math.max(dp[i-1][0], dp[i-1][0] + nums[i-1]);
-                dp[i][1] = Math.max(dp[i-1][1], dp[i-1][1] + nums[i-1]);
-                dp[i][2] = Math.max(dp[i-1][2], dp[i-1][2] + nums[i-1]);
-            } else if (nums[i-1] % 3 == 1) {
-                dp[i][0] = Math.max(dp[i-1][0], dp[i-1][2] + nums[i-1]);
-                dp[i][1] = Math.max(dp[i-1][1], dp[i-1][0] + nums[i-1]);
-                dp[i][2] = Math.max(dp[i-1][2], dp[i-1][1] + nums[i-1]);
-            } else if (nums[i-1] % 3 == 2) {
-                dp[i][0] = Math.max(dp[i-1][0], dp[i-1][1] + nums[i-1]);
-                dp[i][1] = Math.max(dp[i-1][1], dp[i-1][2] + nums[i-1]);
-                dp[i][2] = Math.max(dp[i-1][2], dp[i-1][0] + nums[i-1]);
+
+    class UF {
+        private int count;
+        private int[] parent;
+        private int[] size;
+
+        public UF(int n) {
+            this.count = n;
+            parent = new int[n];
+            size = new int[n];
+            for (int i = 0; i < n; i++) {
+                //如果自己就是根节点，那么parent[i] = i，即自己指向自己
+                //最初的每个节点都是独立的
+                parent[i] = i;
+                size[i] = 1;
             }
         }
-        return dp[n][0];
+
+        /* 将 p 和 q 连接 */
+        public void union(int p, int q) {
+            // 找到 p 的根节点 rootP
+            // 找到 q 的根节点 rootQ
+            int rootP = find(p);
+            int rootQ = find(q);
+            // 如果已经在同一个连通分中，跳过
+            if (rootP == rootQ) return;
+            // 平衡性优化
+            if (size[rootP] < size[rootQ]) {
+                parent[rootP] = rootQ;
+                size[rootQ] += size[rootP];
+            } else {
+                parent[rootQ] = rootP;
+                size[rootP] += size[rootQ];
+            }
+            this.count--;
+        }
+
+        /* 判断 p 和 q 是否连通 */
+        public boolean connected(int p, int q) {
+            int rootP = find(p);
+            int rootQ = find(q);
+            return rootP == rootQ;
+        }
+
+        /* 返回图中连通分量大小 */
+        public int count() {
+            return this.count;
+        }
+
+        /* 返回当前节点的根节点 */
+        private int find(int x) {
+            // 路径压缩
+            if (parent[x] != x) {
+                parent[x] = find(parent[x]);
+            }
+            return parent[x];
+        }
+
+    }
+
+    public int gcd(int a, int b) {
+        return b == 0 ? a : gcd(b, a % b);
     }
 
 
+    public class ListNode {
+        int val;
+        ListNode next;
 
+        ListNode() {
+        }
 
-    void swap(int[] nums, int left, int right) {
-        int temp = nums[right];
-        nums[right] = nums[left];
-        nums[left] = temp;
+        ListNode(int val) {
+            this.val = val;
+        }
+
+        ListNode(int val, ListNode next) {
+            this.val = val;
+            this.next = next;
+        }
     }
+
+    public class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+
+        TreeNode() {
+        }
+
+        TreeNode(int val) {
+            this.val = val;
+        }
+
+        TreeNode(int val, TreeNode left, TreeNode right) {
+            this.val = val;
+            this.left = left;
+            this.right = right;
+        }
+    }
+
+//并查集用来解决连通块的问题
+
+
 }
 
 
-//树状数组模板 最终版
-class BIT {
-    public int[] tree; // 树状数组
-    public final int[] nums; // 原数组
-    public int n;
 
-    public BIT(int _n) {
-        n = _n;
-        tree = new int[n + 1];
-        nums = new int[n + 1];
-        Arrays.fill(tree, Integer.MIN_VALUE);
-        Arrays.fill(nums, Integer.MIN_VALUE);
-    }
 
-    // 返回闭区间 [1, i] 的元素和
-    public int sum(int x) {
-        int res = 0;
-        while (x > 0) {
-            res += tree[x];
-            x &= x - 1;
-        }
-        return res;
-    }
 
-    public int preMax(int i) {
-        int res = Integer.MIN_VALUE;
-        while (i > 0) {
-            res = Math.max(res, tree[i]);
-            i &= i - 1;
-        }
-        return res;
-    }
 
-    // 返回闭区间 [left, right] 的元素和
-    public int querySum(int left, int right) {
-        return sum(right) - sum(left - 1);
-    }
 
-    private int lowbit(int x) {
-        return x & -x;
-    }
-
-    // 目标值定义, 此例为最大值
-    private int choose(int a, int b) {
-        return Math.max(a, b);
-    }
-
-    // 查询[a, b]之间的目标值
-    public int query(int a, int b) {
-        int ret = nums[b];
-        while (b >= a) {
-            ret = choose(ret, nums[b]);
-            b--;
-            for (; b - lowbit(b) >= a; b -= lowbit(b)) {
-                ret = choose(ret, tree[b]);
-            }
-        }
-        return ret;
-    }
-
-    // 将下标 i 上的数加一
-    public void inc(int i) {
-        while (i < tree.length) {
-            ++tree[i];
-            i += i & -i;
-        }
-    }
-
-    // 修改下标为idx的数为val
-    public void update(int idx, int val) {
-        nums[idx] = val;
-        tree[idx] = val;
-        while (idx <= n) {
-            int lx = lowbit(idx);
-            for (int i = 1; i < lx; i <<= 1) {
-                tree[idx] = choose(tree[idx], tree[idx - i]);
-            }
-            idx += lx;
-        }
-    }
-}
 
 
 
